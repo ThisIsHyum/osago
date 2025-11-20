@@ -27,9 +27,9 @@ func (c *Client) doReq(ctx context.Context, method, path string, body, v any) er
 	var req *http.Request
 	var err error
 	if body != nil {
-		b, err := json.Marshal(body)
-		if err != nil {
-			return err
+		b, marshalErr := json.Marshal(body)
+		if marshalErr != nil {
+			return marshalErr
 		}
 		req, err = http.NewRequestWithContext(ctx, method, c.baseURL+path, bytes.NewReader(b))
 		req.Header.Set("Content-Type", "application/json")
