@@ -11,6 +11,22 @@ import (
 	"github.com/ThisIsHyum/osago/dto"
 )
 
+type HTTPError struct {
+	StatusCode int
+	Message    string
+}
+
+func (e *HTTPError) Error() string {
+	return fmt.Sprintf("http %d: %s", e.StatusCode, e.Message)
+}
+
+func NewHttpError(statusCode int, message string) error {
+	return &HTTPError{
+		StatusCode: statusCode,
+		Message:    message,
+	}
+}
+
 type Client struct {
 	baseURL    string
 	httpClient *http.Client
@@ -51,7 +67,7 @@ func (c *Client) doReq(ctx context.Context, method, path string, body, v any) er
 		if err := json.NewDecoder(resp.Body).Decode(&errorResponse); err != nil {
 			return fmt.Errorf("unable to decode error response: %w", err)
 		}
-		return fmt.Errorf("status code: %d, error message: %s", resp.StatusCode, errorResponse.Error)
+		return NewHttpError(errorResponse.StatusCode, errorResponse.Error)
 	}
 	if v != nil {
 		if err := json.NewDecoder(resp.Body).Decode(v); err != nil {
