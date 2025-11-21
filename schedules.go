@@ -11,6 +11,8 @@ import (
 	"github.com/ThisIsHyum/osago/types"
 )
 
+var ErrScheduleNotFound = errors.New("schedule not found")
+
 func (c *Client) GetScheduleForToday(ctx context.Context, groupId uint) (types.Schedule, error) {
 	return c.getSchedule(ctx, groupId, "day=today")
 }
@@ -62,7 +64,7 @@ func (c *Client) getSchedule(ctx context.Context, groupId uint, query string) (t
 		return types.Schedule{}, err
 	}
 	if len(schedules) == 0 {
-		return types.Schedule{}, errors.New("schedule not found")
+		return types.Schedule{}, ErrScheduleNotFound
 	}
 	return schedules[0], nil
 }
