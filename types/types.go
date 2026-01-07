@@ -18,7 +18,7 @@ type (
 		CampusID      uint           `json:"campusId"`
 		Name          string         `json:"name"`
 		CollegeID     uint           `json:"collegeId"`
-		StudentGroups []StudentGroup `json:"studentGroups"`
+		StudentGroups []StudentGroup `json:"groups"`
 	}
 
 	StudentGroup struct {
