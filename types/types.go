@@ -22,7 +22,7 @@ type (
 	}
 
 	StudentGroup struct {
-		StudentGroupID uint   `json:"studentGroupId,omitempty"`
+		StudentGroupID uint   `json:"groupId,omitempty"`
 		Name           string `json:"name"`
 		CampusID       uint   `json:"campusId"`
 	}
