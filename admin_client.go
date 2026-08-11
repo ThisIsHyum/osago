@@ -2,40 +2,36 @@ package osago
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"time"
 
-	"github.com/ThisIsHyum/osago/dto"
+	"github.com/ThisIsHyum/osago/client/admin"
+	"github.com/ThisIsHyum/osago/models"
+	"github.com/go-openapi/runtime"
+	httptransport "github.com/go-openapi/runtime/client"
 )
 
 type AdminClient struct {
 	*Client
-	token string
+	auth runtime.ClientAuthInfoWriter
 }
 
 func NewAdminClient(url, token string, timeout time.Duration) *AdminClient {
-	c := NewClient(url, timeout)
-	c.httpClient.Transport = newAuthTransport(token)
-	return &AdminClient{
-		Client: c,
-		token:  token,
-	}
+	return &AdminClient{Client: NewClient(url, timeout), auth: httptransport.BearerToken(token)}
 }
 
 func (c *AdminClient) NewParser(ctx context.Context, collegeName string, campusNames []string) (string, error) {
-	request := dto.NewParserRequest{
-		CollegeName: collegeName,
-		CampusNames: campusNames,
-	}
-	var response dto.NewParserResponse
-	err := c.doReq(ctx, http.MethodPost, "/admin/parser", request, &response)
+	params := admin.NewPostAdminParserParams().WithNewParserRequest(
+		&models.DtoNewParserRequest{CollegeName: collegeName, CampusNames: campusNames})
+
+	resp, err := c.c.Admin.PostAdminParserContext(ctx, params, c.auth)
 	if err != nil {
 		return "", err
 	}
-	return response.Token, nil
+	return resp.Payload.Token, nil
 }
 
-func (c *AdminClient) DeleteParser(ctx context.Context, id uint) error {
-	return c.doReq(ctx, http.MethodDelete, fmt.Sprintf("/admin/parser/%d", id), nil, nil)
+func (c *AdminClient) DeleteParser(ctx context.Context, id int64) error {
+	_, err := c.c.Admin.DeleteAdminParserIDContext(ctx,
+		admin.NewDeleteAdminParserIDParams().WithID(id), c.auth)
+	return err
 }

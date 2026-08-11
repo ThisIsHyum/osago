@@ -2,69 +2,81 @@ package osago
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"net/http"
-	"net/url"
 	"time"
 
-	"github.com/ThisIsHyum/osago/types"
+	"github.com/ThisIsHyum/osago/client/schedules"
+	"github.com/ThisIsHyum/osago/models"
 )
 
-var ErrScheduleNotFound = errors.New("schedule not found")
-
-func (c *Client) GetScheduleForToday(ctx context.Context, groupID uint) (types.Schedule, error) {
-	return c.getSchedule(ctx, groupID, "day=today")
+func (c *Client) GetScheduleForToday(ctx context.Context, groupID int64) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, nil, nil, nil, ptr("today"))
 }
 
-func (c *Client) GetScheduleForTomorrow(ctx context.Context, groupID uint) (types.Schedule, error) {
-	return c.getSchedule(ctx, groupID, "day=tomorrow")
+func (c *Client) GetScheduleForTomorrow(ctx context.Context, groupID int64) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, nil, nil, nil, ptr("tomorrow"))
 }
 
-func (c *Client) GetScheduleForDate(ctx context.Context, groupID uint, date time.Time) (types.Schedule, error) {
-	return c.getSchedule(ctx, groupID, "date="+url.QueryEscape(date.Format("02-01-2006")))
+func (c *Client) GetScheduleForDate(ctx context.Context, groupID int64, date time.Time) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, &date, nil, nil, nil)
 }
 
-func (c *Client) GetScheduleForWeekdayOfPreviousWeek(ctx context.Context, groupID uint, weekday time.Weekday) (types.Schedule, error) {
-	return c.getSchedule(ctx, groupID, fmt.Sprintf("week=previous&weekday=%s", weekday))
+func (c *Client) GetScheduleForWeekdayOfPreviousWeek(ctx context.Context, groupID int64, weekday time.Weekday) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, nil, &weekday, ptr("previous"), nil)
 }
 
-func (c *Client) GetScheduleForWeekday(ctx context.Context, groupID uint, weekday time.Weekday) (types.Schedule, error) {
-	return c.getSchedule(ctx, groupID, fmt.Sprintf("week=current&weekday=%s", weekday))
+func (c *Client) GetScheduleForWeekday(ctx context.Context, groupID int64, weekday time.Weekday) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, nil, &weekday, ptr("current"), nil)
 }
 
-func (c *Client) GetScheduleForWeekdayOfNextWeek(ctx context.Context, groupID uint, weekday time.Weekday) (types.Schedule, error) {
-	return c.getSchedule(ctx, groupID, fmt.Sprintf("week=next&weekday=%s", weekday))
+func (c *Client) GetScheduleForWeekdayOfNextWeek(ctx context.Context, groupID int64, weekday time.Weekday) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, nil, &weekday, ptr("next"), nil)
 }
 
-func (c *Client) GetSchedulesForPreviousWeek(ctx context.Context, groupID uint) ([]types.Schedule, error) {
-	return c.getSchedules(ctx, groupID, "week=previous")
+func (c *Client) GetSchedulesForPreviousWeek(ctx context.Context, groupID int64) ([]*models.DtoScheduleResponse, error) {
+	return c.getSchedules(ctx, groupID, ptr("previous"))
 }
 
-func (c *Client) GetSchedulesForCurrentWeek(ctx context.Context, groupID uint) ([]types.Schedule, error) {
-	return c.getSchedules(ctx, groupID, "week=current")
+func (c *Client) GetSchedulesForCurrentWeek(ctx context.Context, groupID int64) ([]*models.DtoScheduleResponse, error) {
+	return c.getSchedules(ctx, groupID, ptr("current"))
 }
 
-func (c *Client) GetSchedulesForNextWeek(ctx context.Context, groupID uint) ([]types.Schedule, error) {
-	return c.getSchedules(ctx, groupID, "week=next")
+func (c *Client) GetSchedulesForNextWeek(ctx context.Context, groupID int64) ([]*models.DtoScheduleResponse, error) {
+	return c.getSchedules(ctx, groupID, ptr("next"))
 }
 
-func (c *Client) getSchedules(ctx context.Context, groupID uint, query string) ([]types.Schedule, error) {
-	var schedules []types.Schedule
-	path := fmt.Sprintf("/groups/%d/schedules?%s", groupID, query)
-	if err := c.doReq(ctx, http.MethodGet, path, nil, &schedules); err != nil {
+func (c *Client) getSchedules(ctx context.Context, groupID int64, week *string) ([]*models.DtoScheduleResponse, error) {
+	resp, err := c.c.Schedules.GetGroupsGroupIDSchedulesContext(ctx,
+		schedules.NewGetGroupsGroupIDSchedulesParams().WithGroupID(groupID).WithWeek(week))
+	if err != nil {
 		return nil, err
 	}
-	return schedules, nil
+	return resp.Payload, nil
 }
 
-func (c *Client) getSchedule(ctx context.Context, groupID uint, query string) (types.Schedule, error) {
-	schedules, err := c.getSchedules(ctx, groupID, query)
+func (c *Client) getSchedule(ctx context.Context, groupID int64,
+	date *time.Time, weekday *time.Weekday, week, day *string) (*models.DtoScheduleResponse, error) {
+	var dateString *string
+	if date != nil {
+		dateString = ptr(date.Format("02-01-2006"))
+	}
+	var w *string
+	if weekday != nil {
+		w = ptr(weekday.String())
+	}
+	resp, err := c.c.Schedules.GetGroupsGroupIDSchedulesContext(ctx,
+		schedules.NewGetGroupsGroupIDSchedulesParams().WithGroupID(groupID).
+			WithDate(dateString).WithDay(day).WithWeekday(w).WithWeek(week))
+
 	if err != nil {
-		return types.Schedule{}, err
+		return nil, err
 	}
-	if len(schedules) == 0 {
-		return types.Schedule{}, ErrScheduleNotFound
+
+	if len(resp.Payload) == 0 {
+		return nil, ErrNotFound
 	}
-	return schedules[0], nil
+	return resp.Payload[0], nil
+}
+
+func ptr[T any](v T) *T {
+	return &v
 }

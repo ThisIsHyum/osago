@@ -4,83 +4,86 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
 
-	"github.com/ThisIsHyum/osago/dto"
-	"github.com/ThisIsHyum/osago/types"
+	"github.com/ThisIsHyum/osago/client/parser"
+	"github.com/ThisIsHyum/osago/models"
+
+	"github.com/go-openapi/runtime"
+	httptransport "github.com/go-openapi/runtime/client"
 )
 
 type Parser interface {
-	SendLessons(groups map[string]uint, lessons chan<- []types.Lesson) error
+	SendLessons(groups map[string]int64, lessons chan<- []*models.DtoLesson) error
 	GetStudentGroupNames(campusName string) (groupNames []string, _ error)
-	GetCalls() ([]types.Call, error)
+	GetCalls() ([]models.DtoCall, error)
 }
 
 type ParserClient struct {
 	*Client
 	Parser    Parser
-	token     string
-	collegeId uint
+	auth      runtime.ClientAuthInfoWriter
+	collegeID int64
 }
 
-func NewParserClient(ctx context.Context, baseURL, token string, timeout time.Duration) (*ParserClient, error) {
-	if token == "" {
-		return nil, errors.New("token cannot be empty")
+func NewParserClient(ctx context.Context, url, token string, timeout time.Duration) (*ParserClient, error) {
+	c := &ParserClient{
+		Client: NewClient(url, timeout),
+		auth:   httptransport.BearerToken(token),
 	}
 
-	c := NewClient(baseURL, timeout)
-	c.httpClient.Transport = newAuthTransport(token)
-
-	var parserResp dto.ParserResponse
-	err := c.doReq(ctx, http.MethodGet, "/parser", nil, &parserResp)
+	resp, err := c.c.Parser.GetParserContext(ctx, parser.NewGetParserParams(), c.auth)
 	if err != nil {
 		return nil, err
 	}
-
-	return &ParserClient{
-		Client:    c,
-		token:     token,
-		collegeId: parserResp.CollegeID,
-	}, nil
+	c.collegeID = resp.Payload.CollegeID
+	return c, nil
 }
 
 func (c *ParserClient) SetParser(parser Parser) { c.Parser = parser }
 
-func (c *ParserClient) UpdateGroups(ctx context.Context, campusID uint, studentGroupNames []string) error {
-	request := dto.GroupsRequest{
+func (c *ParserClient) UpdateGroups(ctx context.Context, campusID int64, studentGroupNames []string) error {
+	req := models.DtoUpdateGroupsRequest{
 		CampusID:          campusID,
 		StudentGroupNames: studentGroupNames,
 	}
-	return c.doReq(ctx, http.MethodPost, "/parser/groups", request, nil)
+	_, err := c.c.Parser.PostParserGroupsContext(ctx,
+		parser.NewPostParserGroupsParams().WithUpdateGroupsRequest(&req), c.auth)
+	return err
 }
-func (c *ParserClient) UpdateCalls(ctx context.Context, calls []types.Call) error {
-	return c.doReq(ctx, http.MethodPost, "/parser/calls", calls, nil)
-}
-
-func (c *ParserClient) AddLessons(ctx context.Context, lessons []types.Lesson) error {
-	return c.doReq(ctx, http.MethodPost, "/parser/lessons", lessons, nil)
-}
-
-func (c *ParserClient) GetCollege(ctx context.Context) (types.College, error) {
-	return c.Client.GetCollege(ctx, c.collegeId)
-}
-func (c *ParserClient) GetCampuses(ctx context.Context) ([]types.Campus, error) {
-	return c.Client.GetCampuses(ctx, c.collegeId)
-}
-func (c *ParserClient) GetCampusByName(ctx context.Context, name string) (types.Campus, error) {
-	return c.Client.GetCampusByName(ctx, c.collegeId, name)
+func (c *ParserClient) UpdateCalls(ctx context.Context, calls []models.DtoCall) error {
+	_, err := c.c.Parser.PostParserCallsContext(ctx,
+		parser.NewPostParserCallsParams().WithCalls(calls), c.auth)
+	return err
 }
 
-func (c *ParserClient) GetGroups(ctx context.Context) ([]types.StudentGroup, error) {
-	return c.Client.GetGroupsByCollegeID(ctx, c.collegeId)
+func (c *ParserClient) AddLessons(ctx context.Context, lessons []*models.DtoLesson) error {
+	_, err := c.c.Parser.PostParserLessonsContext(ctx,
+		parser.NewPostParserLessonsParams().WithLessons(lessons), c.auth)
+	return err
 }
 
-func (c *ParserClient) Run(ctx context.Context) error {
+func (c *ParserClient) GetCollege(ctx context.Context) (*models.DtoCollegeResponse, error) {
+	return c.Client.GetCollege(ctx, c.collegeID)
+}
+func (c *ParserClient) GetCampuses(ctx context.Context) ([]*models.DtoCampusResponse, error) {
+	return c.Client.GetCampuses(ctx, c.collegeID)
+}
+func (c *ParserClient) GetCampusByName(ctx context.Context, name string) (*models.DtoCampusResponse, error) {
+	return c.Client.GetCampusByName(ctx, c.collegeID, name)
+}
+
+func (c *ParserClient) GetGroups(ctx context.Context) ([]*models.DtoStudentGroupResponse, error) {
+	return c.Client.GetGroupsByCollegeID(ctx, c.collegeID, nil)
+}
+func (c *ParserClient) GetGroupsByName(ctx context.Context, name string) ([]*models.DtoStudentGroupResponse, error) {
+	return c.Client.GetGroupsByCollegeID(ctx, c.collegeID, &name)
+}
+
+func (c *ParserClient) Run(ctx context.Context, errorCh chan<- error) error {
 	if c.Parser == nil {
 		return errors.New("parser is not set")
 	}
-
 	college, err := c.GetCollege(ctx)
 	if err != nil {
 		return fmt.Errorf("unable to get college: %w", err)
@@ -101,7 +104,7 @@ func (c *ParserClient) Run(ctx context.Context) error {
 		return fmt.Errorf("unable to get groups: %w", err)
 	}
 
-	mapGroups := make(map[string]uint, len(groups))
+	mapGroups := make(map[string]int64, len(groups))
 	for _, group := range groups {
 		mapGroups[group.Name] = group.StudentGroupID
 	}
@@ -110,20 +113,27 @@ func (c *ParserClient) Run(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("unable to get calls: %w", err)
 	}
-	if err = c.UpdateCalls(ctx, calls); err != nil {
+	if err := c.UpdateCalls(ctx, calls); err != nil {
 		return fmt.Errorf("unable to update calls: %w", err)
 	}
-	errChan := make(chan error, 1)
-	lessonsChan := make(chan []types.Lesson)
+
+	lessonsChan := make(chan []*models.DtoLesson)
 	go func() {
 		defer close(lessonsChan)
-		errChan <- c.Parser.SendLessons(mapGroups, lessonsChan)
+		if err := c.Parser.SendLessons(mapGroups, lessonsChan); err != nil {
+			reportError(errorCh, fmt.Errorf("unable to send lessons: %w", err))
+		}
 	}()
 	for lessons := range lessonsChan {
-		err := c.AddLessons(ctx, lessons)
-		if err != nil {
-			return fmt.Errorf("unable to add lessons: %w", err)
+		if err := c.AddLessons(ctx, lessons); err != nil {
+			reportError(errorCh, fmt.Errorf("unable to add lessons: %w", err))
 		}
 	}
-	return <-errChan
+	return nil
+}
+
+func reportError(errs chan<- error, err error) {
+	if errs != nil {
+		errs <- err
+	}
 }

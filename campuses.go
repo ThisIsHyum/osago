@@ -3,33 +3,37 @@ package osago
 import (
 	"context"
 	"fmt"
-	"net/http"
-	"net/url"
 
-	"github.com/ThisIsHyum/osago/types"
+	"github.com/ThisIsHyum/osago/client/campuses"
+	"github.com/ThisIsHyum/osago/models"
 )
 
-func (c *Client) GetCampus(ctx context.Context, campusID uint) (types.Campus, error) {
-	var campus types.Campus
-	err := c.doReq(ctx, http.MethodGet, fmt.Sprintf("/campuses/%d", campusID), nil, &campus)
-	return campus, err
-}
-
-func (c *Client) GetCampusByName(ctx context.Context, collegeID uint, name string) (types.Campus, error) {
-	var campuses []types.Campus
-	err := c.doReq(ctx, http.MethodGet, fmt.Sprintf("/colleges/%d/campuses?name=%s",
-		collegeID, url.QueryEscape(name)), nil, &campuses)
+func (c *Client) GetCampus(ctx context.Context, id int64) (*models.DtoCampusResponse, error) {
+	resp, err := c.c.Campuses.GetCampusesIDContext(ctx, campuses.NewGetCampusesIDParams().WithID(id))
 	if err != nil {
-		return types.Campus{}, err
+		return nil, err
 	}
-	if len(campuses) == 0 {
-		return types.Campus{}, fmt.Errorf("campus %q not found", name)
-	}
-	return campuses[0], nil
+	return resp.Payload, nil
 }
 
-func (c *Client) GetCampuses(ctx context.Context, collegeID uint) ([]types.Campus, error) {
-	var campuses []types.Campus
-	err := c.doReq(ctx, http.MethodGet, fmt.Sprintf("/colleges/%d/campuses", collegeID), nil, &campuses)
-	return campuses, err
+func (c *Client) GetCampusByName(ctx context.Context, collegeID int64, name string) (*models.DtoCampusResponse, error) {
+	resp, err := c.c.Campuses.GetCollegesCollegeIDCampusesContext(
+		ctx, campuses.NewGetCollegesCollegeIDCampusesParams().
+			WithCollegeID(int64(collegeID)).WithName(&name))
+	if err != nil {
+		return nil, err
+	}
+	if len(resp.Payload) == 0 {
+		return nil, fmt.Errorf("campus %q: %w", name, ErrNotFound)
+	}
+	return resp.Payload[0], nil
+}
+
+func (c *Client) GetCampuses(ctx context.Context, collegeID int64) ([]*models.DtoCampusResponse, error) {
+	resp, err := c.c.Campuses.GetCollegesCollegeIDCampusesContext(
+		ctx, campuses.NewGetCollegesCollegeIDCampusesParams().WithCollegeID(int64(collegeID)))
+	if err != nil {
+		return nil, err
+	}
+	return resp.Payload, nil
 }
