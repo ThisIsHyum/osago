@@ -16,7 +16,7 @@ import (
 type Parser interface {
 	SendLessons(groups map[string]int64, lessons chan<- []*models.DtoLesson) error
 	GetStudentGroupNames(campusName string) (groupNames []string, _ error)
-	GetCalls() ([]models.DtoCall, error)
+	GetCalls() ([]*models.DtoCall, error)
 }
 
 type ParserClient struct {
@@ -51,7 +51,7 @@ func (c *ParserClient) UpdateGroups(ctx context.Context, campusID int64, student
 		parser.NewPostParserGroupsParams().WithUpdateGroupsRequest(&req), c.auth)
 	return err
 }
-func (c *ParserClient) UpdateCalls(ctx context.Context, calls []models.DtoCall) error {
+func (c *ParserClient) UpdateCalls(ctx context.Context, calls []*models.DtoCall) error {
 	_, err := c.c.Parser.PostParserCallsContext(ctx,
 		parser.NewPostParserCallsParams().WithCalls(calls), c.auth)
 	return err

@@ -66,7 +66,7 @@ type PostParserCallsParams struct {
 	// Calls.
 	//
 	// Calls
-	Calls []models.DtoCall
+	Calls []*models.DtoCall
 
 	HTTPClient *http.Client
 
@@ -126,13 +126,13 @@ func (o *PostParserCallsParams) SetHTTPClient(client *http.Client) {
 }
 
 // WithCalls adds the calls to the post parser calls params.
-func (o *PostParserCallsParams) WithCalls(calls []models.DtoCall) *PostParserCallsParams {
+func (o *PostParserCallsParams) WithCalls(calls []*models.DtoCall) *PostParserCallsParams {
 	o.SetCalls(calls)
 	return o
 }
 
 // SetCalls adds the calls to the post parser calls params.
-func (o *PostParserCallsParams) SetCalls(calls []models.DtoCall) {
+func (o *PostParserCallsParams) SetCalls(calls []*models.DtoCall) {
 	o.Calls = calls
 }
 

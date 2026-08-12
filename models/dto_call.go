@@ -2,7 +2,122 @@
 
 package models
 
+import (
+	"context"
+	stderrors "errors"
+
+	"github.com/go-openapi/errors"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag/jsonutils"
+	"github.com/go-openapi/swag/typeutils"
+)
+
 // DtoCall dto call
 //
 // swagger:model dto.Call
-type DtoCall any
+type DtoCall struct {
+
+	// begins
+	Begins string `json:"begins,omitempty"`
+
+	// call Id
+	CallID int64 `json:"callId,omitempty"`
+
+	// ends
+	Ends string `json:"ends,omitempty"`
+
+	// order
+	Order int64 `json:"order,omitempty"`
+
+	// weekday
+	Weekday TimeWeekday `json:"weekday,omitempty"`
+}
+
+// Validate validates this dto call
+func (m *DtoCall) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateWeekday(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DtoCall) validateWeekday(formats strfmt.Registry) error {
+	if typeutils.IsZero(m.Weekday) { // not required
+		return nil
+	}
+
+	if err := m.Weekday.Validate(formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("weekday")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("weekday")
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this dto call based on the context it is used
+func (m *DtoCall) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateWeekday(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DtoCall) contextValidateWeekday(ctx context.Context, formats strfmt.Registry) error {
+
+	if typeutils.IsZero(m.Weekday) { // not required
+		return nil
+	}
+
+	if err := m.Weekday.ContextValidate(ctx, formats); err != nil {
+		ve := new(errors.Validation)
+		if stderrors.As(err, &ve) {
+			return ve.ValidateName("weekday")
+		}
+		ce := new(errors.CompositeError)
+		if stderrors.As(err, &ce) {
+			return ce.ValidateName("weekday")
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+// MarshalBinary interface implementation
+func (m *DtoCall) MarshalBinary() ([]byte, error) {
+	if m == nil {
+		return nil, nil
+	}
+	return jsonutils.WriteJSON(m)
+}
+
+// UnmarshalBinary interface implementation
+func (m *DtoCall) UnmarshalBinary(b []byte) error {
+	var res DtoCall
+	if err := jsonutils.ReadJSON(b, &res); err != nil {
+		return err
+	}
+	*m = res
+	return nil
+}

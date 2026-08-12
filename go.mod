@@ -11,6 +11,7 @@ require (
 	github.com/go-openapi/swag/conv v0.28.0
 	github.com/go-openapi/swag/jsonutils v0.28.0
 	github.com/go-openapi/swag/typeutils v0.28.0
+	github.com/go-openapi/validate v0.26.1
 )
 
 require (
@@ -31,7 +32,6 @@ require (
 	github.com/go-openapi/swag/pools v0.28.0 // indirect
 	github.com/go-openapi/swag/stringutils v0.27.3 // indirect
 	github.com/go-openapi/swag/yamlutils v0.27.3 // indirect
-	github.com/go-openapi/validate v0.26.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/oapi-codegen/oapi-codegen/v2 v2.8.0 // indirect
