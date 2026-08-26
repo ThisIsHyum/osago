@@ -74,6 +74,12 @@ type ClientService interface {
 	// GetGroupsIDContext get a group by ID.
 	GetGroupsIDContext(ctx context.Context, params *GetGroupsIDParams, opts ...ClientOption) (*GetGroupsIDOK, error)
 
+	// GetGroupsIDSchedulesLast get last lesson date.
+	GetGroupsIDSchedulesLast(params *GetGroupsIDSchedulesLastParams, opts ...ClientOption) (*GetGroupsIDSchedulesLastOK, error)
+
+	// GetGroupsIDSchedulesLastContext get last lesson date.
+	GetGroupsIDSchedulesLastContext(ctx context.Context, params *GetGroupsIDSchedulesLastParams, opts ...ClientOption) (*GetGroupsIDSchedulesLastOK, error)
+
 	SetTransport(transport runtime.ContextualTransport)
 }
 
@@ -272,6 +278,72 @@ func (a *Client) GetGroupsIDContext(ctx context.Context, params *GetGroupsIDPara
 	//
 	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for GetGroupsID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+// GetGroupsIDSchedulesLast gets last lesson date.
+//
+// get the last lesson date by group ID.
+//
+// This method does not support injected context.
+// However, timeout and opentracing contexts are honored whenever enabled.
+//
+// If you need to pass a specific context, use [Client.GetGroupsIDSchedulesLastContext] instead.
+func (a *Client) GetGroupsIDSchedulesLast(params *GetGroupsIDSchedulesLastParams, opts ...ClientOption) (*GetGroupsIDSchedulesLastOK, error) {
+	var ctx context.Context
+	if params.inner.ctx != nil {
+		ctx = params.inner.ctx
+	} else {
+		ctx = context.Background()
+	}
+
+	return a.GetGroupsIDSchedulesLastContext(ctx, params, opts...)
+}
+
+// GetGroupsIDSchedulesLastContext gets last lesson date.
+//
+// get the last lesson date by group ID.
+//
+// Do not use the deprecated [GetGroupsIDSchedulesLastParams.Context] with this method: it would be ignored.
+func (a *Client) GetGroupsIDSchedulesLastContext(ctx context.Context, params *GetGroupsIDSchedulesLastParams, opts ...ClientOption) (*GetGroupsIDSchedulesLastOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewGetGroupsIDSchedulesLastParams()
+	}
+
+	op := &runtime.ClientOperation{
+		ID:                 "GetGroupsIDSchedulesLast",
+		Method:             "GET",
+		PathPattern:        "/groups/{id}/schedules/last",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetGroupsIDSchedulesLastReader{formats: a.formats},
+		Client:             params.HTTPClient,
+	}
+
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.SubmitContext(ctx, op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*GetGroupsIDSchedulesLastOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetGroupsIDSchedulesLast: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

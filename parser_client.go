@@ -15,6 +15,7 @@ import (
 
 type Parser interface {
 	SendLessons(groups map[string]int64, lessons chan<- []*models.DtoLesson) error
+	SendReplaces(groups map[string]int64, replaces chan<- []*models.DtoReplace) error
 	GetStudentGroupNames(campusName string) (groupNames []string, _ error)
 	GetCalls() ([]*models.DtoCall, error)
 }
@@ -60,6 +61,12 @@ func (c *ParserClient) UpdateCalls(ctx context.Context, calls []*models.DtoCall)
 func (c *ParserClient) AddLessons(ctx context.Context, lessons []*models.DtoLesson) error {
 	_, err := c.c.Parser.PostParserLessonsContext(ctx,
 		parser.NewPostParserLessonsParams().WithLessons(lessons), c.auth)
+	return err
+}
+
+func (c *ParserClient) AddReplaces(ctx context.Context, replaces []*models.DtoReplace) error {
+	_, err := c.c.Parser.PostParserReplacesContext(ctx,
+		parser.NewPostParserReplacesParams().WithReplaces(replaces), c.auth)
 	return err
 }
 
@@ -124,12 +131,32 @@ func (c *ParserClient) Run(ctx context.Context, errorCh chan<- error) error {
 			reportError(errorCh, fmt.Errorf("unable to send lessons: %w", err))
 		}
 	}()
-	for lessons := range lessonsChan {
-		if err := c.AddLessons(ctx, lessons); err != nil {
-			reportError(errorCh, fmt.Errorf("unable to add lessons: %w", err))
+
+	replacesChan := make(chan []*models.DtoReplace)
+	go func() {
+		defer close(replacesChan)
+		if err := c.Parser.SendReplaces(mapGroups, replacesChan); err != nil {
+			reportError(errorCh, fmt.Errorf("unable to send replaces: %w", err))
 		}
-	}
-	return nil
+	}()
+
+	go func() {
+		for lessons := range lessonsChan {
+			if err := c.AddLessons(ctx, lessons); err != nil {
+				reportError(errorCh, fmt.Errorf("unable to add lessons: %w", err))
+			}
+		}
+	}()
+	go func() {
+		for replaces := range replacesChan {
+			if err := c.AddReplaces(ctx, replaces); err != nil {
+				reportError(errorCh, fmt.Errorf("unable to add replaces: %w", err))
+			}
+		}
+	}()
+
+	<-ctx.Done()
+	return ctx.Err()
 }
 
 func reportError(errs chan<- error, err error) {

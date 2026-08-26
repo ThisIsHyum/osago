@@ -68,6 +68,12 @@ type ClientService interface {
 	// GetCollegesIDContext get a college by ID.
 	GetCollegesIDContext(ctx context.Context, params *GetCollegesIDParams, opts ...ClientOption) (*GetCollegesIDOK, error)
 
+	// GetCollegesIDSchedulesLast get last lesson date.
+	GetCollegesIDSchedulesLast(params *GetCollegesIDSchedulesLastParams, opts ...ClientOption) (*GetCollegesIDSchedulesLastOK, error)
+
+	// GetCollegesIDSchedulesLastContext get last lesson date.
+	GetCollegesIDSchedulesLastContext(ctx context.Context, params *GetCollegesIDSchedulesLastParams, opts ...ClientOption) (*GetCollegesIDSchedulesLastOK, error)
+
 	SetTransport(transport runtime.ContextualTransport)
 }
 
@@ -200,6 +206,72 @@ func (a *Client) GetCollegesIDContext(ctx context.Context, params *GetCollegesID
 	//
 	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for GetCollegesID: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+// GetCollegesIDSchedulesLast gets last lesson date.
+//
+// get the last lesson date by college ID.
+//
+// This method does not support injected context.
+// However, timeout and opentracing contexts are honored whenever enabled.
+//
+// If you need to pass a specific context, use [Client.GetCollegesIDSchedulesLastContext] instead.
+func (a *Client) GetCollegesIDSchedulesLast(params *GetCollegesIDSchedulesLastParams, opts ...ClientOption) (*GetCollegesIDSchedulesLastOK, error) {
+	var ctx context.Context
+	if params.inner.ctx != nil {
+		ctx = params.inner.ctx
+	} else {
+		ctx = context.Background()
+	}
+
+	return a.GetCollegesIDSchedulesLastContext(ctx, params, opts...)
+}
+
+// GetCollegesIDSchedulesLastContext gets last lesson date.
+//
+// get the last lesson date by college ID.
+//
+// Do not use the deprecated [GetCollegesIDSchedulesLastParams.Context] with this method: it would be ignored.
+func (a *Client) GetCollegesIDSchedulesLastContext(ctx context.Context, params *GetCollegesIDSchedulesLastParams, opts ...ClientOption) (*GetCollegesIDSchedulesLastOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewGetCollegesIDSchedulesLastParams()
+	}
+
+	op := &runtime.ClientOperation{
+		ID:                 "GetCollegesIDSchedulesLast",
+		Method:             "GET",
+		PathPattern:        "/colleges/{id}/schedules/last",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetCollegesIDSchedulesLastReader{formats: a.formats},
+		Client:             params.HTTPClient,
+	}
+
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.SubmitContext(ctx, op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*GetCollegesIDSchedulesLastOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetCollegesIDSchedulesLast: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

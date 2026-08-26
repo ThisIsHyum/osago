@@ -80,6 +80,12 @@ type ClientService interface {
 	// PostParserLessonsContext add lessons to parser college.
 	PostParserLessonsContext(ctx context.Context, params *PostParserLessonsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PostParserLessonsNoContent, error)
 
+	// PostParserReplaces add replaces to parser college.
+	PostParserReplaces(params *PostParserReplacesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PostParserReplacesNoContent, error)
+
+	// PostParserReplacesContext add replaces to parser college.
+	PostParserReplacesContext(ctx context.Context, params *PostParserReplacesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PostParserReplacesNoContent, error)
+
 	SetTransport(transport runtime.ContextualTransport)
 }
 
@@ -348,6 +354,73 @@ func (a *Client) PostParserLessonsContext(ctx context.Context, params *PostParse
 	//
 	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
 	msg := fmt.Sprintf("unexpected success response for PostParserLessons: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+// PostParserReplaces adds replaces to parser college.
+//
+// add replaces to parser college.
+//
+// This method does not support injected context.
+// However, timeout and opentracing contexts are honored whenever enabled.
+//
+// If you need to pass a specific context, use [Client.PostParserReplacesContext] instead.
+func (a *Client) PostParserReplaces(params *PostParserReplacesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PostParserReplacesNoContent, error) {
+	var ctx context.Context
+	if params.inner.ctx != nil {
+		ctx = params.inner.ctx
+	} else {
+		ctx = context.Background()
+	}
+
+	return a.PostParserReplacesContext(ctx, params, authInfo, opts...)
+}
+
+// PostParserReplacesContext adds replaces to parser college.
+//
+// add replaces to parser college.
+//
+// Do not use the deprecated [PostParserReplacesParams.Context] with this method: it would be ignored.
+func (a *Client) PostParserReplacesContext(ctx context.Context, params *PostParserReplacesParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*PostParserReplacesNoContent, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewPostParserReplacesParams()
+	}
+
+	op := &runtime.ClientOperation{
+		ID:                 "PostParserReplaces",
+		Method:             "POST",
+		PathPattern:        "/parser/replaces",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &PostParserReplacesReader{formats: a.formats},
+		AuthInfo:           authInfo,
+		Client:             params.HTTPClient,
+	}
+
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.SubmitContext(ctx, op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*PostParserReplacesNoContent)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for PostParserReplaces: API contract not enforced by server. Client expected to get an error, but got: %T", result)
 	panic(msg)
 }
 

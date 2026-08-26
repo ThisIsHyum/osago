@@ -4,9 +4,12 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag/jsonutils"
+	"github.com/go-openapi/swag/typeutils"
 )
 
 // DtoScheduleLessonResponse dto schedule lesson response
@@ -23,6 +26,9 @@ type DtoScheduleLessonResponse struct {
 	// order
 	Order int64 `json:"order,omitempty"`
 
+	// replace
+	Replace *DtoScheduleReplaceResponse `json:"replace,omitempty"`
+
 	// start time
 	StartTime string `json:"startTime,omitempty"`
 
@@ -35,11 +41,77 @@ type DtoScheduleLessonResponse struct {
 
 // Validate validates this dto schedule lesson response
 func (m *DtoScheduleLessonResponse) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateReplace(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
 	return nil
 }
 
-// ContextValidate validates this dto schedule lesson response based on context it is used
+func (m *DtoScheduleLessonResponse) validateReplace(formats strfmt.Registry) error {
+	if typeutils.IsZero(m.Replace) { // not required
+		return nil
+	}
+
+	if m.Replace != nil {
+		if err := m.Replace.Validate(formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("replace")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("replace")
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ContextValidate validate this dto schedule lesson response based on the context it is used
 func (m *DtoScheduleLessonResponse) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateReplace(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *DtoScheduleLessonResponse) contextValidateReplace(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.Replace != nil {
+
+		if typeutils.IsZero(m.Replace) { // not required
+			return nil
+		}
+
+		if err := m.Replace.ContextValidate(ctx, formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("replace")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("replace")
+			}
+
+			return err
+		}
+	}
+
 	return nil
 }
 

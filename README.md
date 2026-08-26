@@ -2,7 +2,7 @@
 
 Go-клиент для [OpenScheduleApi](github.com/thisishyum/openscheduleapi), сгенерированный на основе OpenAPI-спецификации.
 
-Соответствует версии API v0.3.2
+Соответствует версии API v0.4.0
 
 ## Использование
 ```golang

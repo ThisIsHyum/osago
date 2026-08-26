@@ -3,6 +3,7 @@ package osago
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/ThisIsHyum/osago/client/groups"
 	"github.com/ThisIsHyum/osago/models"
@@ -44,4 +45,13 @@ func (c *Client) GetGroupsByCollegeID(ctx context.Context, collegeID int64, name
 		return nil, err
 	}
 	return resp.Payload, nil
+}
+
+func (c *Client) GetGroupScheduleLast(ctx context.Context, id int64) (time.Time, error) {
+	resp, err := c.c.Groups.GetGroupsIDSchedulesLastContext(ctx,
+		groups.NewGetGroupsIDSchedulesLastParams().WithID(id))
+	if err != nil {
+		return time.Time{}, err
+	}
+	return time.Parse(time.DateOnly, resp.Payload.Date)
 }

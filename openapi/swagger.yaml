@@ -34,6 +34,11 @@ definitions:
       name:
         type: string
     type: object
+  dto.DateResponse:
+    properties:
+      date:
+        type: string
+    type: object
   dto.ErrorResponse:
     properties:
       error:
@@ -77,6 +82,26 @@ definitions:
       token:
         type: string
     type: object
+  dto.Replace:
+    properties:
+      cabinet:
+        type: string
+        x-nullable: true
+      date:
+        type: string
+      order:
+        type: integer
+      replaceId:
+        type: integer
+      studentGroupID:
+        type: integer
+      teacher:
+        type: string
+        x-nullable: true
+      title:
+        type: string
+        x-nullable: true
+    type: object
   dto.ScheduleLessonResponse:
     properties:
       cabinet:
@@ -85,7 +110,18 @@ definitions:
         type: string
       order:
         type: integer
+      replace:
+        $ref: '#/definitions/dto.ScheduleReplaceResponse'
       startTime:
+        type: string
+      teacher:
+        type: string
+      title:
+        type: string
+    type: object
+  dto.ScheduleReplaceResponse:
+    properties:
+      cabinet:
         type: string
       teacher:
         type: string
@@ -146,7 +182,7 @@ info:
     name: GPL-3.0
     url: https://www.gnu.org/licenses/gpl-3.0.html
   title: Open Schedule API
-  version: 0.3.1
+  version: 0.4.0
 paths:
   /admin/parser:
     post:
@@ -292,6 +328,37 @@ paths:
       summary: get a campus by ID
       tags:
       - campuses
+  /campuses/{id}/schedules/last:
+    get:
+      description: get the last lesson date by campus ID
+      parameters:
+      - description: Campus ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: get last lesson date
+      tags:
+      - campuses
   /colleges:
     get:
       description: get all colleges or a college with specified name
@@ -423,6 +490,37 @@ paths:
       summary: get a college by ID
       tags:
       - colleges
+  /colleges/{id}/schedules/last:
+    get:
+      description: get the last lesson date by college ID
+      parameters:
+      - description: College ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: get last lesson date
+      tags:
+      - colleges
   /groups/{groupId}/schedules:
     get:
       description: get schedules by group ID
@@ -520,6 +618,37 @@ paths:
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
       summary: get a group by ID
+      tags:
+      - groups
+  /groups/{id}/schedules/last:
+    get:
+      description: get the last lesson date by group ID
+      parameters:
+      - description: Group ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.DateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: get last lesson date
       tags:
       - groups
   /parser:
@@ -649,6 +778,42 @@ paths:
       security:
       - ParserBearerAuth: []
       summary: add lessons to parser college
+      tags:
+      - parser
+  /parser/replaces:
+    post:
+      consumes:
+      - application/json
+      description: add replaces to parser college
+      parameters:
+      - description: Replacements
+        in: body
+        name: replaces
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/dto.Replace'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      security:
+      - ParserBearerAuth: []
+      summary: add replaces to parser college
       tags:
       - parser
 securityDefinitions:

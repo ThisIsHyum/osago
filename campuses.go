@@ -3,6 +3,7 @@ package osago
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/ThisIsHyum/osago/client/campuses"
 	"github.com/ThisIsHyum/osago/models"
@@ -36,4 +37,13 @@ func (c *Client) GetCampuses(ctx context.Context, collegeID int64) ([]*models.Dt
 		return nil, err
 	}
 	return resp.Payload, nil
+}
+
+func (c *Client) GetCampusScheduleLast(ctx context.Context, id int64) (time.Time, error) {
+	resp, err := c.c.Campuses.GetCampusesIDSchedulesLastContext(ctx,
+		campuses.NewGetCampusesIDSchedulesLastParams().WithID(id))
+	if err != nil {
+		return time.Time{}, err
+	}
+	return time.Parse(time.DateOnly, resp.Payload.Date)
 }
