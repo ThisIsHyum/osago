@@ -56,16 +56,160 @@ type ClientOption func(*runtime.ClientOperation)
 // ClientService is the interface for Client methods.
 type ClientService interface {
 
-	// GetGroupsGroupIDSchedules get schedules.
+	// GetCampusesCampusIDSchedules get schedules by campus ID.
+	GetCampusesCampusIDSchedules(params *GetCampusesCampusIDSchedulesParams, opts ...ClientOption) (*GetCampusesCampusIDSchedulesOK, error)
+
+	// GetCampusesCampusIDSchedulesContext get schedules by campus ID.
+	GetCampusesCampusIDSchedulesContext(ctx context.Context, params *GetCampusesCampusIDSchedulesParams, opts ...ClientOption) (*GetCampusesCampusIDSchedulesOK, error)
+
+	// GetCollegesCollegeIDSchedules get schedules by college ID.
+	GetCollegesCollegeIDSchedules(params *GetCollegesCollegeIDSchedulesParams, opts ...ClientOption) (*GetCollegesCollegeIDSchedulesOK, error)
+
+	// GetCollegesCollegeIDSchedulesContext get schedules by college ID.
+	GetCollegesCollegeIDSchedulesContext(ctx context.Context, params *GetCollegesCollegeIDSchedulesParams, opts ...ClientOption) (*GetCollegesCollegeIDSchedulesOK, error)
+
+	// GetGroupsGroupIDSchedules get schedules by group ID.
 	GetGroupsGroupIDSchedules(params *GetGroupsGroupIDSchedulesParams, opts ...ClientOption) (*GetGroupsGroupIDSchedulesOK, error)
 
-	// GetGroupsGroupIDSchedulesContext get schedules.
+	// GetGroupsGroupIDSchedulesContext get schedules by group ID.
 	GetGroupsGroupIDSchedulesContext(ctx context.Context, params *GetGroupsGroupIDSchedulesParams, opts ...ClientOption) (*GetGroupsGroupIDSchedulesOK, error)
 
 	SetTransport(transport runtime.ContextualTransport)
 }
 
-// GetGroupsGroupIDSchedules gets schedules.
+// GetCampusesCampusIDSchedules gets schedules by campus ID.
+//
+// get schedules by campus ID.
+//
+// This method does not support injected context.
+// However, timeout and opentracing contexts are honored whenever enabled.
+//
+// If you need to pass a specific context, use [Client.GetCampusesCampusIDSchedulesContext] instead.
+func (a *Client) GetCampusesCampusIDSchedules(params *GetCampusesCampusIDSchedulesParams, opts ...ClientOption) (*GetCampusesCampusIDSchedulesOK, error) {
+	var ctx context.Context
+	if params.inner.ctx != nil {
+		ctx = params.inner.ctx
+	} else {
+		ctx = context.Background()
+	}
+
+	return a.GetCampusesCampusIDSchedulesContext(ctx, params, opts...)
+}
+
+// GetCampusesCampusIDSchedulesContext gets schedules by campus ID.
+//
+// get schedules by campus ID.
+//
+// Do not use the deprecated [GetCampusesCampusIDSchedulesParams.Context] with this method: it would be ignored.
+func (a *Client) GetCampusesCampusIDSchedulesContext(ctx context.Context, params *GetCampusesCampusIDSchedulesParams, opts ...ClientOption) (*GetCampusesCampusIDSchedulesOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewGetCampusesCampusIDSchedulesParams()
+	}
+
+	op := &runtime.ClientOperation{
+		ID:                 "GetCampusesCampusIDSchedules",
+		Method:             "GET",
+		PathPattern:        "/campuses/{campusId}/schedules",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetCampusesCampusIDSchedulesReader{formats: a.formats},
+		Client:             params.HTTPClient,
+	}
+
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.SubmitContext(ctx, op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*GetCampusesCampusIDSchedulesOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetCampusesCampusIDSchedules: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+// GetCollegesCollegeIDSchedules gets schedules by college ID.
+//
+// get schedules by college ID.
+//
+// This method does not support injected context.
+// However, timeout and opentracing contexts are honored whenever enabled.
+//
+// If you need to pass a specific context, use [Client.GetCollegesCollegeIDSchedulesContext] instead.
+func (a *Client) GetCollegesCollegeIDSchedules(params *GetCollegesCollegeIDSchedulesParams, opts ...ClientOption) (*GetCollegesCollegeIDSchedulesOK, error) {
+	var ctx context.Context
+	if params.inner.ctx != nil {
+		ctx = params.inner.ctx
+	} else {
+		ctx = context.Background()
+	}
+
+	return a.GetCollegesCollegeIDSchedulesContext(ctx, params, opts...)
+}
+
+// GetCollegesCollegeIDSchedulesContext gets schedules by college ID.
+//
+// get schedules by college ID.
+//
+// Do not use the deprecated [GetCollegesCollegeIDSchedulesParams.Context] with this method: it would be ignored.
+func (a *Client) GetCollegesCollegeIDSchedulesContext(ctx context.Context, params *GetCollegesCollegeIDSchedulesParams, opts ...ClientOption) (*GetCollegesCollegeIDSchedulesOK, error) {
+	// NOTE: parameters are not validated before sending
+	if params == nil {
+		params = NewGetCollegesCollegeIDSchedulesParams()
+	}
+
+	op := &runtime.ClientOperation{
+		ID:                 "GetCollegesCollegeIDSchedules",
+		Method:             "GET",
+		PathPattern:        "/colleges/{collegeId}/schedules",
+		ProducesMediaTypes: []string{"application/json"},
+		ConsumesMediaTypes: []string{"application/json"},
+		Schemes:            []string{"http"},
+		Params:             params,
+		Reader:             &GetCollegesCollegeIDSchedulesReader{formats: a.formats},
+		Client:             params.HTTPClient,
+	}
+
+	for _, opt := range opts {
+		opt(op)
+	}
+
+	result, err := a.transport.SubmitContext(ctx, op)
+	if err != nil {
+		return nil, err
+	}
+
+	// only one success response has to be checked
+	success, ok := result.(*GetCollegesCollegeIDSchedulesOK)
+	if ok {
+		return success, nil
+	}
+
+	// unexpected success response.
+
+	// no default response is defined.
+	//
+	// safeguard: normally, in the absence of a default response, unknown success responses return an error above: so this is a codegen issue
+	msg := fmt.Sprintf("unexpected success response for GetCollegesCollegeIDSchedules: API contract not enforced by server. Client expected to get an error, but got: %T", result)
+	panic(msg)
+}
+
+// GetGroupsGroupIDSchedules gets schedules by group ID.
 //
 // get schedules by group ID.
 //
@@ -84,7 +228,7 @@ func (a *Client) GetGroupsGroupIDSchedules(params *GetGroupsGroupIDSchedulesPara
 	return a.GetGroupsGroupIDSchedulesContext(ctx, params, opts...)
 }
 
-// GetGroupsGroupIDSchedulesContext gets schedules.
+// GetGroupsGroupIDSchedulesContext gets schedules by group ID.
 //
 // get schedules by group ID.
 //

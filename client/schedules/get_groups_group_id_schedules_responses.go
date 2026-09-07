@@ -39,12 +39,6 @@ func (o *GetGroupsGroupIDSchedulesReader) ReadResponse(response runtime.ClientRe
 			return nil, err
 		}
 		return nil, result
-	case 409:
-		result := NewGetGroupsGroupIDSchedulesConflict()
-		if err := result.readResponse(response, consumer, o.formats); err != nil {
-			return nil, err
-		}
-		return nil, result
 	case 500:
 		result := NewGetGroupsGroupIDSchedulesInternalServerError()
 		if err := result.readResponse(response, consumer, o.formats); err != nil {
@@ -247,74 +241,6 @@ func (o *GetGroupsGroupIDSchedulesNotFound) GetPayload() *models.DtoErrorRespons
 }
 
 func (o *GetGroupsGroupIDSchedulesNotFound) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
-
-	o.Payload = new(models.DtoErrorResponse)
-
-	// response payload
-	if err := consumer.Consume(response.Body(), o.Payload); err != nil && !stderrors.Is(err, io.EOF) {
-		return err
-	}
-
-	return nil
-}
-
-// NewGetGroupsGroupIDSchedulesConflict creates a GetGroupsGroupIDSchedulesConflict with default headers values
-func NewGetGroupsGroupIDSchedulesConflict() *GetGroupsGroupIDSchedulesConflict {
-	return &GetGroupsGroupIDSchedulesConflict{}
-}
-
-// GetGroupsGroupIDSchedulesConflict describes a response with status code 409, with default header values.
-//
-// Conflict
-type GetGroupsGroupIDSchedulesConflict struct {
-	Payload *models.DtoErrorResponse
-}
-
-// IsSuccess returns true when this get groups group Id schedules conflict response has a 2xx status code
-func (o *GetGroupsGroupIDSchedulesConflict) IsSuccess() bool {
-	return false
-}
-
-// IsRedirect returns true when this get groups group Id schedules conflict response has a 3xx status code
-func (o *GetGroupsGroupIDSchedulesConflict) IsRedirect() bool {
-	return false
-}
-
-// IsClientError returns true when this get groups group Id schedules conflict response has a 4xx status code
-func (o *GetGroupsGroupIDSchedulesConflict) IsClientError() bool {
-	return true
-}
-
-// IsServerError returns true when this get groups group Id schedules conflict response has a 5xx status code
-func (o *GetGroupsGroupIDSchedulesConflict) IsServerError() bool {
-	return false
-}
-
-// IsCode returns true when this get groups group Id schedules conflict response a status code equal to that given
-func (o *GetGroupsGroupIDSchedulesConflict) IsCode(code int) bool {
-	return code == 409
-}
-
-// Code gets the status code for the get groups group Id schedules conflict response
-func (o *GetGroupsGroupIDSchedulesConflict) Code() int {
-	return 409
-}
-
-func (o *GetGroupsGroupIDSchedulesConflict) Error() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[GET /groups/{groupId}/schedules][%d] getGroupsGroupIdSchedulesConflict %s", 409, payload)
-}
-
-func (o *GetGroupsGroupIDSchedulesConflict) String() string {
-	payload, _ := json.Marshal(o.Payload)
-	return fmt.Sprintf("[GET /groups/{groupId}/schedules][%d] getGroupsGroupIdSchedulesConflict %s", 409, payload)
-}
-
-func (o *GetGroupsGroupIDSchedulesConflict) GetPayload() *models.DtoErrorResponse {
-	return o.Payload
-}
-
-func (o *GetGroupsGroupIDSchedulesConflict) readResponse(response runtime.ClientResponse, consumer runtime.Consumer, formats strfmt.Registry) error {
 
 	o.Payload = new(models.DtoErrorResponse)
 

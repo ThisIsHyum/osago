@@ -8,45 +8,51 @@ import (
 	"github.com/ThisIsHyum/osago/models"
 )
 
-func (c *Client) GetScheduleForToday(ctx context.Context, groupID int64) (*models.DtoScheduleResponse, error) {
-	return c.getSchedule(ctx, groupID, nil, nil, nil, ptr("today"))
+type ScheduleFilter struct {
+	Teacher, Cabinet, Title *string
 }
 
-func (c *Client) GetScheduleForTomorrow(ctx context.Context, groupID int64) (*models.DtoScheduleResponse, error) {
-	return c.getSchedule(ctx, groupID, nil, nil, nil, ptr("tomorrow"))
+func (c *Client) GetScheduleForToday(ctx context.Context, groupID int64, filter ScheduleFilter) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, nil, nil, nil, ptr("today"), filter)
 }
 
-func (c *Client) GetScheduleForDate(ctx context.Context, groupID int64, date time.Time) (*models.DtoScheduleResponse, error) {
-	return c.getSchedule(ctx, groupID, &date, nil, nil, nil)
+func (c *Client) GetScheduleForTomorrow(ctx context.Context, groupID int64, filter ScheduleFilter) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, nil, nil, nil, ptr("tomorrow"), filter)
 }
 
-func (c *Client) GetScheduleForWeekdayOfPreviousWeek(ctx context.Context, groupID int64, weekday time.Weekday) (*models.DtoScheduleResponse, error) {
-	return c.getSchedule(ctx, groupID, nil, &weekday, ptr("previous"), nil)
+func (c *Client) GetScheduleForDate(ctx context.Context, groupID int64, date time.Time, filter ScheduleFilter) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, &date, nil, nil, nil, filter)
 }
 
-func (c *Client) GetScheduleForWeekday(ctx context.Context, groupID int64, weekday time.Weekday) (*models.DtoScheduleResponse, error) {
-	return c.getSchedule(ctx, groupID, nil, &weekday, ptr("current"), nil)
+func (c *Client) GetScheduleForWeekdayOfPreviousWeek(ctx context.Context, groupID int64, weekday time.Weekday, filter ScheduleFilter) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, nil, &weekday, ptr("previous"), nil, filter)
 }
 
-func (c *Client) GetScheduleForWeekdayOfNextWeek(ctx context.Context, groupID int64, weekday time.Weekday) (*models.DtoScheduleResponse, error) {
-	return c.getSchedule(ctx, groupID, nil, &weekday, ptr("next"), nil)
+func (c *Client) GetScheduleForWeekday(ctx context.Context, groupID int64, weekday time.Weekday, filter ScheduleFilter) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, nil, &weekday, ptr("current"), nil, filter)
 }
 
-func (c *Client) GetSchedulesForPreviousWeek(ctx context.Context, groupID int64) ([]*models.DtoScheduleResponse, error) {
-	return c.getSchedules(ctx, groupID, ptr("previous"))
+func (c *Client) GetScheduleForWeekdayOfNextWeek(ctx context.Context, groupID int64, weekday time.Weekday, filter ScheduleFilter) (*models.DtoScheduleResponse, error) {
+	return c.getSchedule(ctx, groupID, nil, &weekday, ptr("next"), nil, filter)
 }
 
-func (c *Client) GetSchedulesForCurrentWeek(ctx context.Context, groupID int64) ([]*models.DtoScheduleResponse, error) {
-	return c.getSchedules(ctx, groupID, ptr("current"))
+func (c *Client) GetSchedulesForPreviousWeek(ctx context.Context, groupID int64, filter ScheduleFilter) ([]*models.DtoScheduleResponse, error) {
+	return c.getSchedules(ctx, groupID, ptr("previous"), filter)
 }
 
-func (c *Client) GetSchedulesForNextWeek(ctx context.Context, groupID int64) ([]*models.DtoScheduleResponse, error) {
-	return c.getSchedules(ctx, groupID, ptr("next"))
+func (c *Client) GetSchedulesForCurrentWeek(ctx context.Context, groupID int64, filter ScheduleFilter) ([]*models.DtoScheduleResponse, error) {
+	return c.getSchedules(ctx, groupID, ptr("current"), filter)
 }
 
-func (c *Client) getSchedules(ctx context.Context, groupID int64, week *string) ([]*models.DtoScheduleResponse, error) {
+func (c *Client) GetSchedulesForNextWeek(ctx context.Context, groupID int64, filter ScheduleFilter) ([]*models.DtoScheduleResponse, error) {
+	return c.getSchedules(ctx, groupID, ptr("next"), filter)
+}
+
+func (c *Client) getSchedules(ctx context.Context, groupID int64, week *string, filter ScheduleFilter) ([]*models.DtoScheduleResponse, error) {
 	resp, err := c.c.Schedules.GetGroupsGroupIDSchedulesContext(ctx,
-		schedules.NewGetGroupsGroupIDSchedulesParams().WithGroupID(groupID).WithWeek(week))
+		schedules.NewGetGroupsGroupIDSchedulesParams().
+			WithGroupID(groupID).WithWeek(week).
+			WithCabinet(filter.Cabinet).WithTeacher(filter.Teacher).WithTitle(filter.Title))
 	if err != nil {
 		return nil, err
 	}
@@ -54,10 +60,10 @@ func (c *Client) getSchedules(ctx context.Context, groupID int64, week *string) 
 }
 
 func (c *Client) getSchedule(ctx context.Context, groupID int64,
-	date *time.Time, weekday *time.Weekday, week, day *string) (*models.DtoScheduleResponse, error) {
+	date *time.Time, weekday *time.Weekday, week, day *string, filter ScheduleFilter) (*models.DtoScheduleResponse, error) {
 	var dateString *string
 	if date != nil {
-		dateString = ptr(date.Format("02-01-2006"))
+		dateString = ptr(date.Format(time.DateOnly))
 	}
 	var w *string
 	if weekday != nil {
@@ -65,7 +71,8 @@ func (c *Client) getSchedule(ctx context.Context, groupID int64,
 	}
 	resp, err := c.c.Schedules.GetGroupsGroupIDSchedulesContext(ctx,
 		schedules.NewGetGroupsGroupIDSchedulesParams().WithGroupID(groupID).
-			WithDate(dateString).WithDay(day).WithWeekday(w).WithWeek(week))
+			WithDate(dateString).WithDay(day).WithWeekday(w).WithWeek(week).
+			WithCabinet(filter.Cabinet).WithTeacher(filter.Teacher).WithTitle(filter.Title))
 
 	if err != nil {
 		return nil, err

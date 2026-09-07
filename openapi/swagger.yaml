@@ -182,7 +182,7 @@ info:
     name: GPL-3.0
     url: https://www.gnu.org/licenses/gpl-3.0.html
   title: Open Schedule API
-  version: 0.4.0
+  version: 0.5.0
 paths:
   /admin/parser:
     post:
@@ -297,6 +297,82 @@ paths:
       summary: get groups by campus ID
       tags:
       - groups
+  /campuses/{campusId}/schedules:
+    get:
+      description: get schedules by campus ID
+      parameters:
+      - description: Campus ID
+        in: path
+        name: campusId
+        required: true
+        type: integer
+      - description: Specific date (yyyy-mm-dd)
+        in: query
+        name: date
+        type: string
+      - description: Week of schedules
+        enum:
+        - previous
+        - current
+        - next
+        in: query
+        name: week
+        type: string
+      - description: Weekday of schedules
+        enum:
+        - Sunday
+        - Monday
+        - Tuesday
+        - Wednesday
+        - Thursday
+        - Friday
+        - Saturday
+        in: query
+        name: weekday
+        type: string
+      - description: Relative day
+        enum:
+        - today
+        - tomorrow
+        in: query
+        name: day
+        type: string
+      - description: Like title of lessons
+        in: query
+        name: title
+        type: string
+      - description: Like teacher of lessons
+        in: query
+        name: teacher
+        type: string
+      - description: Like cabinet of lessons
+        in: query
+        name: cabinet
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.ScheduleResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: get schedules by campus ID
+      tags:
+      - schedules
   /campuses/{id}:
     get:
       description: get a single campus by its ID
@@ -459,6 +535,82 @@ paths:
       summary: get groups by college ID
       tags:
       - groups
+  /colleges/{collegeId}/schedules:
+    get:
+      description: get schedules by college ID
+      parameters:
+      - description: College ID
+        in: path
+        name: collegeId
+        required: true
+        type: integer
+      - description: Specific date (yyyy-mm-dd)
+        in: query
+        name: date
+        type: string
+      - description: Week of schedules
+        enum:
+        - previous
+        - current
+        - next
+        in: query
+        name: week
+        type: string
+      - description: Weekday of schedules
+        enum:
+        - Sunday
+        - Monday
+        - Tuesday
+        - Wednesday
+        - Thursday
+        - Friday
+        - Saturday
+        in: query
+        name: weekday
+        type: string
+      - description: Relative day
+        enum:
+        - today
+        - tomorrow
+        in: query
+        name: day
+        type: string
+      - description: like title of lessons
+        in: query
+        name: title
+        type: string
+      - description: like teacher of lessons
+        in: query
+        name: teacher
+        type: string
+      - description: like cabinet of lessons
+        in: query
+        name: cabinet
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dto.ScheduleResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
+      summary: get schedules by college ID
+      tags:
+      - schedules
   /colleges/{id}:
     get:
       description: get a single college by its ID
@@ -530,7 +682,7 @@ paths:
         name: groupId
         required: true
         type: integer
-      - description: Specific date (dd-mm-yyyy)
+      - description: Specific date (yyyy-mm-dd)
         in: query
         name: date
         type: string
@@ -561,6 +713,18 @@ paths:
         in: query
         name: day
         type: string
+      - description: like title of lessons
+        in: query
+        name: title
+        type: string
+      - description: like teacher of lessons
+        in: query
+        name: teacher
+        type: string
+      - description: like cabinet of lessons
+        in: query
+        name: cabinet
+        type: string
       produces:
       - application/json
       responses:
@@ -578,15 +742,11 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
-        "409":
-          description: Conflict
-          schema:
-            $ref: '#/definitions/dto.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/dto.ErrorResponse'
-      summary: get schedules
+      summary: get schedules by group ID
       tags:
       - schedules
   /groups/{id}:

@@ -63,9 +63,14 @@ GetGroupsGroupIDSchedulesParams contains all the parameters to send to the API e
 */
 type GetGroupsGroupIDSchedulesParams struct {
 
+	// Cabinet.
+	//
+	// like cabinet of lessons
+	Cabinet *string
+
 	// Date.
 	//
-	// Specific date (dd-mm-yyyy)
+	// Specific date (yyyy-mm-dd)
 	Date *string
 
 	// Day.
@@ -77,6 +82,16 @@ type GetGroupsGroupIDSchedulesParams struct {
 	//
 	// Group ID
 	GroupID int64
+
+	// Teacher.
+	//
+	// like teacher of lessons
+	Teacher *string
+
+	// Title.
+	//
+	// like title of lessons
+	Title *string
 
 	// Week.
 	//
@@ -145,6 +160,17 @@ func (o *GetGroupsGroupIDSchedulesParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithCabinet adds the cabinet to the get groups group ID schedules params.
+func (o *GetGroupsGroupIDSchedulesParams) WithCabinet(cabinet *string) *GetGroupsGroupIDSchedulesParams {
+	o.SetCabinet(cabinet)
+	return o
+}
+
+// SetCabinet adds the cabinet to the get groups group ID schedules params.
+func (o *GetGroupsGroupIDSchedulesParams) SetCabinet(cabinet *string) {
+	o.Cabinet = cabinet
+}
+
 // WithDate adds the date to the get groups group ID schedules params.
 func (o *GetGroupsGroupIDSchedulesParams) WithDate(date *string) *GetGroupsGroupIDSchedulesParams {
 	o.SetDate(date)
@@ -178,6 +204,28 @@ func (o *GetGroupsGroupIDSchedulesParams) SetGroupID(groupID int64) {
 	o.GroupID = groupID
 }
 
+// WithTeacher adds the teacher to the get groups group ID schedules params.
+func (o *GetGroupsGroupIDSchedulesParams) WithTeacher(teacher *string) *GetGroupsGroupIDSchedulesParams {
+	o.SetTeacher(teacher)
+	return o
+}
+
+// SetTeacher adds the teacher to the get groups group ID schedules params.
+func (o *GetGroupsGroupIDSchedulesParams) SetTeacher(teacher *string) {
+	o.Teacher = teacher
+}
+
+// WithTitle adds the title to the get groups group ID schedules params.
+func (o *GetGroupsGroupIDSchedulesParams) WithTitle(title *string) *GetGroupsGroupIDSchedulesParams {
+	o.SetTitle(title)
+	return o
+}
+
+// SetTitle adds the title to the get groups group ID schedules params.
+func (o *GetGroupsGroupIDSchedulesParams) SetTitle(title *string) {
+	o.Title = title
+}
+
 // WithWeek adds the week to the get groups group ID schedules params.
 func (o *GetGroupsGroupIDSchedulesParams) WithWeek(week *string) *GetGroupsGroupIDSchedulesParams {
 	o.SetWeek(week)
@@ -206,6 +254,23 @@ func (o *GetGroupsGroupIDSchedulesParams) WriteToRequest(r runtime.ClientRequest
 		return err
 	}
 	var res []error
+
+	if o.Cabinet != nil {
+
+		// query param cabinet
+		var qrCabinet string
+
+		if o.Cabinet != nil {
+			qrCabinet = *o.Cabinet
+		}
+		qCabinet := qrCabinet
+		if qCabinet != "" {
+
+			if err := r.SetQueryParam("cabinet", qCabinet); err != nil {
+				return err
+			}
+		}
+	}
 
 	if o.Date != nil {
 
@@ -244,6 +309,40 @@ func (o *GetGroupsGroupIDSchedulesParams) WriteToRequest(r runtime.ClientRequest
 	// path param groupId
 	if err := r.SetPathParam("groupId", conv.FormatInteger(o.GroupID)); err != nil {
 		return err
+	}
+
+	if o.Teacher != nil {
+
+		// query param teacher
+		var qrTeacher string
+
+		if o.Teacher != nil {
+			qrTeacher = *o.Teacher
+		}
+		qTeacher := qrTeacher
+		if qTeacher != "" {
+
+			if err := r.SetQueryParam("teacher", qTeacher); err != nil {
+				return err
+			}
+		}
+	}
+
+	if o.Title != nil {
+
+		// query param title
+		var qrTitle string
+
+		if o.Title != nil {
+			qrTitle = *o.Title
+		}
+		qTitle := qrTitle
+		if qTitle != "" {
+
+			if err := r.SetQueryParam("title", qTitle); err != nil {
+				return err
+			}
+		}
 	}
 
 	if o.Week != nil {
