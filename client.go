@@ -16,7 +16,7 @@ type Client struct {
 }
 
 func NewClient(url string, timeout time.Duration) *Client {
-	c := httptransport.NewWithClient(url, "", client.DefaultSchemes, &http.Client{
+	c := httptransport.NewWithClient(url, "", []string{"http", "https"}, &http.Client{
 		Timeout: timeout,
 	})
 	return &Client{c: client.New(c, nil)}
